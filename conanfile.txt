@@ -1,0 +1,8 @@
+[requires]
+raylib/6.0
+[generators]
+CMakeDeps
+CMakeToolchain
+[imports]
+# Copies all files from the package's 'bin' folder to your local 'build/bin'
+sprites, * -> ./build/sprites
