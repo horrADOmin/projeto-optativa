@@ -3,8 +3,9 @@
 int main(void)
 {
     // INIT
-
-    InitWindow(600, 400, "saBOR Persona");
+    int const screen_width = 600;
+    int const screen_height = 400;
+    InitWindow(screen_width, screen_height, "saBOR Persona");
     SetTargetFPS(60);
 
     Texture2D fundo = LoadTexture("sprites/fundo.png");
@@ -45,6 +46,12 @@ Node *walls = criar_lista();
         }
     };
 
+    Camera2D camera = {0};
+    camera.target = heroi.posicao;
+    camera.offset = (Vector2){screen_width / 2.0f, screen_height / 2.0f};
+    camera.rotation = 0.0f;
+    camera.zoom = 1.0f; 
+
     while (!WindowShouldClose())
     {
 
@@ -75,14 +82,17 @@ Node *walls = criar_lista();
             player_height
         };
 
-        checar_colisao(&player, walls, &heroi);
+        checar_colisao(&player, walls, &heroi); 
 
+        camera.target = heroi.posicao;
         
         BeginDrawing();
 
         // DRAW
 
         DrawTexture(fundo, 0, 0, BLUE);
+
+        BeginMode2D(camera);
 
         DrawRectangleLines(player.x, player.y, player.width, player.height, GREEN);
 
@@ -101,7 +111,7 @@ Node *walls = criar_lista();
             0,
             WHITE
         );
-
+        EndMode2D();
         EndDrawing();
     }
 

@@ -40,4 +40,4 @@ void rodar_frames(bool andando, int* frameContador, int* frameAtual);
 // ^movimentação dos frames
 
 
-#endif
+#endif /* FUNCOES_H */
