@@ -28,29 +28,14 @@ Node *walls = criar_lista();
     int player_width = 40;
     int player_height = 50;
 
-    jogador heroi = {
-        .posicao = {175, 100},
-        .posicaoAnterior = {175, 100},
-        .speed = 150.0f,
-        .andando = false,
-        .animacao_player = {
-            .textura = prota,
-            .frameRec = {0, 0, 64, 64},
-            .sprite_width = 64,
-            .sprite_height = 64,
-            .frameAtual = 0,
-            .frameContador = 0,
-            .linha = 1,
-            .frame_tick = 8,
-            .frame_total = 6
-        }
-    };
+jogador heroi;
+    criar_jogador(&heroi, prota);
 
     Camera2D camera = {0};
     camera.target = heroi.posicao;
-    camera.offset = (Vector2){screen_width / 2.0f, screen_height / 2.0f};
+    camera.offset = (Vector2){screen_width / 2.5f, screen_height / 2.5f};
     camera.rotation = 0.0f;
-    camera.zoom = 1.0f; 
+    camera.zoom = 0.8f; 
 
     while (!WindowShouldClose())
     {
@@ -58,7 +43,7 @@ Node *walls = criar_lista();
         // UPDATE
 
         float delta = GetFrameTime();
-   
+
         movimentacao(&heroi, delta);
 
         rodar_frames(
@@ -95,7 +80,7 @@ Node *walls = criar_lista();
         BeginMode2D(camera);
 
         DrawRectangleLines(player.x, player.y, player.width, player.height, GREEN);
-
+        
         Node *atual = walls->next;
         while (atual != NULL)
         {

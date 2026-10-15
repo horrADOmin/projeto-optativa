@@ -67,3 +67,20 @@ void movimentacao(jogador* heroi, float delta)
         heroi->animacao_player.linha = 0;
     }
 }
+
+void criar_jogador(jogador* heroi, Texture2D prota)
+{
+    heroi->posicao = (Vector2){175, 100};
+    heroi->posicaoAnterior = (Vector2){175, 100};
+    heroi->speed = 150.0f;
+    heroi->andando = false;
+    heroi->animacao_player.textura = prota;
+    heroi->animacao_player.frameRec = (Rectangle){0, 0, 64, 64};
+    heroi->animacao_player.sprite_width = 64;
+    heroi->animacao_player.sprite_height = 64;
+    heroi->animacao_player.frameAtual = 0;
+    heroi->animacao_player.frameContador = 0;
+    heroi->animacao_player.linha = 1;
+    heroi->animacao_player.frame_tick = 8;
+    heroi->animacao_player.frame_total = 6;
+}

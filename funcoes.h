@@ -39,5 +39,7 @@ void movimentacao(jogador* heroi, float delta);
 void rodar_frames(bool andando, int* frameContador, int* frameAtual);
 // ^movimentação dos frames
 
+void criar_jogador(jogador* heroi, Texture2D prota);
+// ^cria o jogador
 
 #endif /* FUNCOES_H */
