@@ -103,7 +103,7 @@ jogador heroi;
     // DEINIT
     
     UnloadTexture(fundo);
-    UnloadTexture(prota);
+    destruir_jogador(&heroi);
     destruir_lista(walls);
     walls = NULL;
 

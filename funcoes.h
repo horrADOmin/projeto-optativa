@@ -42,4 +42,7 @@ void rodar_frames(bool andando, int* frameContador, int* frameAtual);
 void criar_jogador(jogador* heroi, Texture2D prota);
 // ^cria o jogador
 
+void destruir_jogador(jogador* heroi);
+// ^destrói o jogador e a textura
+
 #endif /* FUNCOES_H */

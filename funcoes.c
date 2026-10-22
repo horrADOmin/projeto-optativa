@@ -84,3 +84,8 @@ void criar_jogador(jogador* heroi, Texture2D prota)
     heroi->animacao_player.frame_tick = 8;
     heroi->animacao_player.frame_total = 6;
 }
+
+void destruir_jogador(jogador* heroi)
+{
+    UnloadTexture(heroi->animacao_player.textura);
+}
