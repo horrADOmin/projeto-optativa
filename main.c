@@ -69,7 +69,7 @@ jogador heroi;
 
         checar_colisao(&player, walls, &heroi); 
 
-        camera.target = heroi.posicao;
+        camera.target = (Vector2){heroi.posicao.x + 20, heroi.posicao.y + 20};
         
         BeginDrawing();
 
