@@ -89,3 +89,14 @@ void destruir_jogador(jogador* heroi)
 {
     UnloadTexture(heroi->animacao_player.textura);
 }
+
+void configurar_camera(Camera2D* camera, jogador* heroi)
+{
+    camera->target.x = heroi->posicao.x + 20;
+    camera->target.y = heroi->posicao.y + 20;
+
+    camera->offset = (Vector2){ GetScreenWidth() / 2.5f, GetScreenHeight() / 2.0f };
+
+    camera->rotation = 0.0f;
+    camera->zoom = 1.0f;
+}

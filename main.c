@@ -5,11 +5,13 @@ int main(void)
     // INIT
     int const screen_width = 600;
     int const screen_height = 400;
+    Camera2D camera = {0};
     InitWindow(screen_width, screen_height, "saBOR Persona");
     SetTargetFPS(60);
 
     Texture2D fundo = LoadTexture("sprites/fundo.png");
     Texture2D prota = LoadTexture("sprites/Unarmed_Walk_without_shadow.png");
+    Texture2D fundo_ubuntu = LoadTexture("sprites/fundo_branco.png");
 
     Rectangle wall_right = {580, 0, 20, 400};
     Rectangle wall_left = {0, 0, 20, 400};
@@ -31,12 +33,8 @@ Node *walls = criar_lista();
 jogador heroi;
     criar_jogador(&heroi, prota);
 
-    Camera2D camera = {0};
-    camera.target = heroi.posicao;
-    camera.offset = (Vector2){screen_width / 2.5f, screen_height / 2.5f};
-    camera.rotation = 0.0f;
-    camera.zoom = 0.8f; 
-
+    configurar_camera(&camera, &heroi);
+        
     while (!WindowShouldClose())
     {
 
@@ -75,10 +73,10 @@ jogador heroi;
 
         // DRAW
 
-        DrawTexture(fundo, 0, 0, BLUE);
+        DrawTexture(fundo_ubuntu, 0, 0, BLUE);
 
         BeginMode2D(camera);
-
+        DrawTexture(fundo, 0, 0, BLUE);
         DrawRectangleLines(player.x, player.y, player.width, player.height, GREEN);
         
         Node *atual = walls->next;

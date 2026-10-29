@@ -45,4 +45,6 @@ void criar_jogador(jogador* heroi, Texture2D prota);
 void destruir_jogador(jogador* heroi);
 // ^destrói o jogador e a textura
 
+void configurar_camera(Camera2D* camera, jogador* heroi);
+// ^configura a camera para seguir o jogador
 #endif /* FUNCOES_H */
