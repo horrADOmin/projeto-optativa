@@ -65,7 +65,10 @@ jogador heroi;
             player_height
         };
 
-        checar_colisao(&player, walls, &heroi); 
+        checar_colisao(&player, walls, &heroi);
+
+        player.x = heroi.posicao.x + Offset;
+        player.y = heroi.posicao.y + Offset;
 
         camera.target = (Vector2){heroi.posicao.x + 20, heroi.posicao.y + 20};
         

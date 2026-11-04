@@ -21,51 +21,75 @@ void rodar_frames(bool andando, int *frameContador, int *frameAtual)
     }
 }
 
-void checar_colisao(Rectangle* player, Node *walls, jogador* heroi)
+bool bate_em_parede(Rectangle r, Node *walls)
 {
     Node *atual = walls->next;
     while (atual != NULL)
     {
-        if (CheckCollisionRecs(*player, atual->wall))
+        if (CheckCollisionRecs(r, atual->wall))
         {
-            heroi->posicao = heroi->posicaoAnterior;
+            return true;
         }
         atual = atual->next;
     }
-    
+    return false;
+}
+
+void checar_colisao(Rectangle* player, Node *walls, jogador* heroi)
+{
+    float offset = player->x - heroi->posicao.x;
+
+    // teste do X: x NOVO, y ANTIGO
+    Rectangle teste_x = {
+        heroi->posicao.x + offset,
+        heroi->posicaoAnterior.y + offset,
+        player->width,
+        player->height
+    };
+
+    if (bate_em_parede(teste_x, walls))
+    {
+        heroi->posicao.x = heroi->posicaoAnterior.x;
+    }
+
+    // teste do Y: x JÁ RESOLVIDO, y NOVO
+    Rectangle teste_y = {
+        heroi->posicao.x + offset,
+        heroi->posicao.y + offset,
+        player->width,
+        player->height
+    };
+
+    if (bate_em_parede(teste_y, walls))
+    {
+        heroi->posicao.y = heroi->posicaoAnterior.y;
+    }
 }
 
 void movimentacao(jogador* heroi, float delta)
 {
-    heroi->andando = false;
     heroi->posicaoAnterior = heroi->posicao;
-    if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT))
-    {
-        heroi->posicao.x += heroi->speed * delta;
-        heroi->andando = true;
-        heroi->animacao_player.linha = 2;
-    }
 
-    if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT))
-    {
-        heroi->posicao.x -= heroi->speed * delta;
-        heroi->andando = true;
-        heroi->animacao_player.linha = 1;
-    }
+    int dx = 0;
+    int dy = 0;
 
-    if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP))
-    {
-        heroi->posicao.y -= heroi->speed * delta;
-        heroi->andando = true;
-        heroi->animacao_player.linha = 3;
-    }
+    if (IsKeyDown(KEY_D) || IsKeyDown(KEY_RIGHT)) dx += 1;
+    if (IsKeyDown(KEY_A) || IsKeyDown(KEY_LEFT))  dx -= 1;
+    if (IsKeyDown(KEY_W) || IsKeyDown(KEY_UP))    dy -= 1;
+    if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))  dy += 1;
 
-    if (IsKeyDown(KEY_S) || IsKeyDown(KEY_DOWN))
-    {
-        heroi->posicao.y += heroi->speed * delta;
-        heroi->andando = true;
-        heroi->animacao_player.linha = 0;
-    }
+    
+    heroi->andando = (dx != 0 || dy != 0);
+
+    
+    if (dx > 0) heroi->animacao_player.linha = 2;
+    if (dx < 0) heroi->animacao_player.linha = 1;
+    if (dy < 0) heroi->animacao_player.linha = 3;
+    if (dy > 0) heroi->animacao_player.linha = 0;
+
+    
+    heroi->posicao.x += dx * heroi->speed * delta;
+    heroi->posicao.y += dy * heroi->speed * delta;
 }
 
 void criar_jogador(jogador* heroi, Texture2D prota)
