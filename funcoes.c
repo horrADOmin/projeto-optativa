@@ -2,22 +2,19 @@
 
 
 
-void rodar_frames(bool andando, int *frameContador, int *frameAtual)
+void rodar_frames(animacione* anim)
 {
-    if (andando)
+    anim->frameContador++;
+
+    if (anim->frameContador >= anim->frame_tick)
     {
-        (*frameContador)++;
+        anim->frameContador = 0;
+        anim->frameAtual++;
+    }
 
-        if (*frameContador >= 8)
-        {
-            *frameContador = 0;
-            (*frameAtual)++;
-        }
-
-        if (*frameAtual >= 6)
-        {
-            *frameAtual = 0;
-        }
+    if (anim->frameAtual >= anim->frame_total)
+    {
+        anim->frameAtual = 0;
     }
 }
 
@@ -92,13 +89,23 @@ void movimentacao(jogador* heroi, float delta)
     heroi->posicao.y += dy * heroi->speed * delta;
 }
 
-void criar_jogador(jogador* heroi, Texture2D prota)
+void criar_combatente(combatente* c, const char* nome, int hp, int ataque, int defesa)
+{
+    snprintf(c->nome, sizeof(c->nome), "%s", nome);
+    c->hp = hp;
+    c->hp_max = hp;
+    c->ataque = ataque;
+    c->defesa = defesa;
+}
+
+void criar_jogador(jogador* heroi, Texture2D prota, Texture2D prota_idle)
 {
     heroi->posicao = (Vector2){175, 100};
     heroi->posicaoAnterior = (Vector2){175, 100};
     heroi->speed = 150.0f;
     heroi->andando = false;
     heroi->animacao_player.textura = prota;
+    heroi->animacao_player.textura_idle = prota_idle;
     heroi->animacao_player.frameRec = (Rectangle){0, 0, 64, 64};
     heroi->animacao_player.sprite_width = 64;
     heroi->animacao_player.sprite_height = 64;
@@ -107,6 +114,7 @@ void criar_jogador(jogador* heroi, Texture2D prota)
     heroi->animacao_player.linha = 1;
     heroi->animacao_player.frame_tick = 8;
     heroi->animacao_player.frame_total = 6;
+    criar_combatente(&heroi->combate, "Heroi", 100, 15, 5);
 }
 
 void destruir_jogador(jogador* heroi)
@@ -124,3 +132,26 @@ void configurar_camera(Camera2D* camera, jogador* heroi)
     camera->rotation = 0.0f;
     camera->zoom = 1.0f;
 }
+
+void atualizar_animacao(jogador* heroi)
+{
+    animacione* anim = &heroi->animacao_player;
+
+    if (heroi->andando)
+    {
+        anim->frame_total = 6;
+    }
+    else
+    {
+        if (anim->linha == 3)
+        {
+            anim->frame_total = 4;
+            anim->frame_tick = 10;
+        }
+        else
+        {
+            anim->frame_total = 12;
+        }
+    }
+}
+
