@@ -10,6 +10,14 @@ typedef enum
     ESTADO_COMBATE
 } estado_jogo;
 
+typedef enum
+{
+    TURNO_JOGADOR,
+    TURNO_INIMIGO,
+    COMBATE_VITORIA,
+    COMBATE_DERROTA
+} estado_combate;
+
 typedef struct Animacao
 {
     Texture2D textura;
@@ -69,4 +77,6 @@ void atualizar_animacao(jogador* heroi);
 void criar_combatente(combatente* c, const char* nome, int hp, int ataque, int defesa);
 // ^cria um combatente com os atributos
 
+int calcular_dano(combatente *atacante, combatente *alvo);
+// ^calcula o dano dos ataques
 #endif /* FUNCOES_H */

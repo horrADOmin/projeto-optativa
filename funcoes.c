@@ -120,6 +120,7 @@ void criar_jogador(jogador* heroi, Texture2D prota, Texture2D prota_idle)
 void destruir_jogador(jogador* heroi)
 {
     UnloadTexture(heroi->animacao_player.textura);
+    UnloadTexture(heroi->animacao_player.textura_idle);
 }
 
 void configurar_camera(Camera2D* camera, jogador* heroi)
@@ -155,3 +156,15 @@ void atualizar_animacao(jogador* heroi)
     }
 }
 
+
+int calcular_dano(combatente *atacante,
+                  combatente *alvo)
+{
+    int dano = atacante->ataque - alvo->defesa;
+
+    if (dano < 1) {
+        dano = 1;
+    }
+
+    return dano;
+}

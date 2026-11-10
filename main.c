@@ -20,6 +20,9 @@ int main(void)
     Rectangle wall_top = {0, 0, 600, 20};
     Rectangle wall_mid = {280, 100, 20, 200};
 
+    Rectangle botaoAtaque = {50, 320, 180, 50};
+
+
     Node *walls = criar_lista();
         inserir_fim(walls, wall_right);
         inserir_fim(walls, wall_left);
@@ -34,6 +37,7 @@ int main(void)
     jogador heroi;
         criar_jogador(&heroi, prota, prota_idle);
         estado_jogo estado = ESTADO_EXPLORACAO;
+        estado_combate turno = TURNO_JOGADOR;
         configurar_camera(&camera, &heroi);
 
     Rectangle player = {0};
@@ -58,6 +62,37 @@ int main(void)
         }
     }
         // UPDATE
+
+        if (estado == ESTADO_COMBATE)
+        {
+            if (turno == TURNO_JOGADOR)
+            {
+                Vector2 mouse = GetMousePosition();
+
+                bool mouseSobreAtaque = CheckCollisionPointRec(mouse, botaoAtaque);
+
+                if (mouseSobreAtaque && IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                {
+                    int dano = calcular_dano(
+                        &heroi.combate,
+                        &inimigo
+                    );
+
+                    inimigo.hp -= dano;
+
+                    if (inimigo.hp <= 0)
+                    {
+                        inimigo.hp = 0;
+                        turno = COMBATE_VITORIA;
+                    }
+                    else
+                    {
+                        turno = TURNO_INIMIGO;
+                    }
+                }
+            }
+        }
+
         if (estado == ESTADO_EXPLORACAO) {
 
         movimentacao(&heroi, delta);
@@ -99,6 +134,30 @@ int main(void)
         BeginDrawing();
 
         // DRAW
+        ClearBackground(BLACK);
+
+        if (turno == TURNO_JOGADOR)
+        {
+            DrawText("Turno do jogador",
+                    50, 280, 20, WHITE);
+        }
+        else if (turno == TURNO_INIMIGO)
+        {
+            DrawText("Turno do labubu",
+                    50, 280, 20, RED);
+        }
+        else if (turno == COMBATE_VITORIA)
+        {
+            DrawText("VITORIA!",
+                    50, 280, 30, GREEN);
+        }
+        else if (turno == COMBATE_DERROTA)
+        {
+            DrawText("DERROTA!",
+                    50, 280, 30, RED);
+        }
+
+
         if (estado == ESTADO_EXPLORACAO) {
 
         DrawTexture(fundo_ubuntu, 0, 0, BLUE);
@@ -128,17 +187,46 @@ int main(void)
         else
 
         {
-            ClearBackground(BLACK);
             DrawText("COMBATE", 10, 10, 20, WHITE);
             DrawText(TextFormat("%s  HP: %d/%d", heroi.combate.nome, heroi.combate.hp, heroi.combate.hp_max), 50, 250, 20, WHITE);
-DrawText(TextFormat("%s  HP: %d/%d", inimigo.nome, inimigo.hp, inimigo.hp_max), 350, 100, 20, WHITE);
+            DrawText(TextFormat("%s  HP: %d/%d", inimigo.nome, inimigo.hp, inimigo.hp_max), 350, 100, 20, WHITE);
+            if (turno == TURNO_JOGADOR)
+            {
+                Vector2 mouse = GetMousePosition();
+
+                bool mouseSobreAtaque =
+                    CheckCollisionPointRec(mouse, botaoAtaque);
+
+                Color corBotao;
+
+                if (mouseSobreAtaque)
+                {
+                    corBotao = RED;
+                }
+                else
+                {
+                    corBotao = MAROON;
+                }
+
+                DrawRectangleRec(botaoAtaque, corBotao);
+
+                DrawText(
+                    "ATACAR",
+                    botaoAtaque.x + 40,
+                    botaoAtaque.y + 15,
+                    20,
+                    WHITE
+                );
+            }
         }
+        
 
         EndDrawing();
     }
     // DEINIT
     
     UnloadTexture(fundo);
+    UnloadTexture(fundo_ubuntu);
     destruir_jogador(&heroi);
     destruir_lista(walls);
     walls = NULL;
