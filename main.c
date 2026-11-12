@@ -450,7 +450,6 @@ int main(void)
 
             EndMode2D();
 
-            DrawText("EXPLORACAO", 10, 10, 20, WHITE);
             DrawText(
                 "SHIFT: correr | ESPACO: atacar",
                 10, 370, 14, WHITE
@@ -562,12 +561,12 @@ int main(void)
 
                 if (CheckCollisionPointRec(mouse, botaoAtaque))
                 {
-                    corAtaque = (Color){69, 59, 48, 255};
+                    corAtaque = (Color){99, 59, 48, 255};
                 }
 
                 if (CheckCollisionPointRec(mouse, botaoDefesa))
                 {
-                    corDefesa = (Color){69, 59, 48, 255};
+                    corDefesa = (Color){69, 59, 88, 255};
                 }
 
                 DrawRectangleRec(botaoAtaque, corAtaque);
@@ -576,8 +575,8 @@ int main(void)
                 DrawRectangleLinesEx(botaoAtaque, 1.5f, dourado);
                 DrawRectangleLinesEx(botaoDefesa, 1.5f, dourado);
 
-                DrawText("ATACAR", 38, 121, 17, texto);
-                DrawText("DEFENDER", 29, 169, 17, texto);
+                DrawText("ATACAR", 38, 121, 17, RED);
+                DrawText("DEFENDER", 29, 169, 17, BLUE);
 
                 if (hits >= 5)
                 {
