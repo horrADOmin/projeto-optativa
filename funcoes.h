@@ -1,3 +1,4 @@
+
 #ifndef FUNCOES_H
 #define FUNCOES_H
 
@@ -40,6 +41,7 @@ typedef struct
     int hp_max;
     int ataque;
     int defesa;
+    bool defendendo;
 } combatente;
 
 typedef struct Player
@@ -52,31 +54,49 @@ typedef struct Player
     combatente combate;
 } jogador;
 
-
 void checar_colisao(Rectangle* player, Node *walls, jogador* heroi);
-// ^checa colisao entre player e wall
+// ^logica da hitbox
 
 void movimentacao(jogador* heroi, float delta);
-// ^movimentação do player
+// ^movimentação do jogador
 
 void rodar_frames(animacione* anim);
-// ^movimentação dos frames
+// ^logica da animação dos sprites
 
 void criar_jogador(jogador* heroi, Texture2D prota, Texture2D prota_idle);
 // ^cria o jogador
 
 void destruir_jogador(jogador* heroi);
-// ^destrói o jogador e a textura
+// ^libera o jogador da memoria
 
 void configurar_camera(Camera2D* camera, jogador* heroi);
-// ^configura a camera para seguir o jogador
+// ^configs da camera
 
-void atualizar_animacao(jogador* heroi);
-// ^atualiza a animação do jogador com base no estado de movimento
+void atualizar_animacao(jogador* heroi, Texture2D prota_run, float delta);
+// ^atualiza as animações de parado, andando e correndo
 
 void criar_combatente(combatente* c, const char* nome, int hp, int ataque, int defesa);
-// ^cria um combatente com os atributos
+// ^cria um combatente com seus atributos
 
 int calcular_dano(combatente *atacante, combatente *alvo);
-// ^calcula o dano dos ataques
-#endif /* FUNCOES_H */
+// ^calcula o dano do ataque
+
+void atacar(combatente *atacante, combatente *alvo);
+// ^aplica o dano no alvo
+
+void limitar_camera(Camera2D *camera, int map_width, int map_height);
+// ^impede a camera de sair do mapa
+
+void criar_mapa(Node *walls);
+// ^cria as hitboxes do mapa
+
+void desenhar_ultimate(Texture2D espadaUlt, float tempoUlt);
+// ^desenha a animação das espadas da ultimate
+
+void desenhar_vida(combatente heroi, combatente inimigo);
+// ^desenha as barras de vida do jogador e do inimigo
+
+Rectangle criar_hitbox_ataque(Rectangle player, int linhaAtaque);
+// ^cria a hitbox do ataque de acordo com a direção
+
+#endif
