@@ -7,6 +7,7 @@ int main(void)
     InitWindow(600, 400, "saBOR Persona");
     SetTargetFPS(60);
 
+    
     Texture2D prota = LoadTexture("sprites/Unarmed_Walk_without_shadow.png");
     Texture2D prota_idle = LoadTexture("sprites/Unarmed_Idle_without_shadow.png");
     Texture2D prota_run = LoadTexture("sprites/Unarmed_Run_without_shadow.png");
