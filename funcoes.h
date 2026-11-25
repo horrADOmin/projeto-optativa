@@ -8,7 +8,9 @@
 typedef enum
 {
     ESTADO_EXPLORACAO,
-    ESTADO_COMBATE
+    ESTADO_COMBATE,
+    ESTADO_MENU,
+    ESTADO_FINAL
 } estado_jogo;
 
 typedef enum
@@ -52,6 +54,8 @@ typedef struct Player
     bool andando;
     animacione animacao_player;
     combatente combate;
+    const char* arma;
+    const char* armadura;
 } jogador;
 
 void checar_colisao(Rectangle* player, Node *walls, jogador* heroi);
@@ -98,5 +102,18 @@ void desenhar_vida(combatente heroi, combatente inimigo);
 
 Rectangle criar_hitbox_ataque(Rectangle player, int linhaAtaque);
 // ^cria a hitbox do ataque de acordo com a direção
+
+void desenhar_bau(Rectangle bau, bool aberto);
+// ^desenha os baus
+
+void desenhar_fonte(Rectangle fonte);
+// ^desenha as fontes de pv
+
+void desenhar_menu(const char* titulo, const char* opcao, Rectangle jogar, Rectangle sair);
+// ^desenha o menu
+
+void desenhar_mapa(Texture2D mapa, Rectangle player, Rectangle slimes[], bool vivos[], Rectangle baus[], bool abertos[], Rectangle fontes[]);
+// ^desenha o mapa
+
 
 #endif

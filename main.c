@@ -7,6 +7,11 @@ int main(void)
     InitWindow(600, 400, "saBOR Persona");
     SetTargetFPS(60);
 
+    if (!FileExists("sprites/scene.png"))
+    {
+        ChangeDirectory(GetApplicationDirectory());
+    }
+
     
     Texture2D prota = LoadTexture("sprites/Unarmed_Walk_without_shadow.png");
     Texture2D prota_idle = LoadTexture("sprites/Unarmed_Idle_without_shadow.png");
@@ -35,19 +40,49 @@ int main(void)
     Camera2D camera = {0};
     configurar_camera(&camera, &heroi);
 
-    combatente inimigos[2];
-    criar_combatente(&inimigos[0], "Slime", 200, 10, 2);
-    criar_combatente(&inimigos[1], "Slime", 200, 10, 2);
+    combatente inimigos[7];
+    criar_combatente(&inimigos[0], "Slime do musgo", 48, 8, 1);
+    criar_combatente(&inimigos[1], "Slime do musgo", 64, 9, 1);
+    criar_combatente(&inimigos[2], "Slime de cobre", 86, 12, 2);
+    criar_combatente(&inimigos[3], "Slime de cobre", 92, 12, 2);
+    criar_combatente(&inimigos[4], "Slime da bruma", 108, 14, 3);
+    criar_combatente(&inimigos[5], "Slime da bruma", 126, 15, 3);
+    criar_combatente(&inimigos[6], "Rei do Eco", 228, 16, 4);
 
-    Rectangle slimes[2] = {
-        {750, 550, 60, 60},
-        {1050, 550, 60, 60}
+    Rectangle slimes[7] = {
+        {275, 520, 80, 80}, {670, 682, 80, 80},
+        {410, 845, 90, 90}, {750, 90, 90, 90},
+        {1190, 390, 100, 100}, {1575, 520, 100, 100},
+        {1505, 65, 145, 145}
     };
-
-    bool vivos[2] = {true, true};
+    Color cores[7] = {
+        {210, 255, 155, 255}, {210, 255, 155, 255}, {255, 184, 109, 255}, {255, 184, 109, 255},
+        {160, 204, 255, 255}, {160, 204, 255, 255}, {251, 159, 239, 255}
+    };
+    bool vivos[7] = {true, true, true, true, true, true, true};
+    Rectangle baus[4] = {
+        {360, 172, 44, 32}, {454, 704, 44, 32},
+        {1110, 115, 44, 32}, {1580, 425, 44, 32}
+    };
+    const char* itens[4] = {"Espada de ferro", "Colete de couro", "Lamina do eco", "Cota de ferro"};
+    int poder[4] = {20, 4, 29, 8};
+    int selos[4] = {0, 1, 3, 4};
+    bool abertos[4] = {false};
+    Rectangle fontes[3] = {{145, 249, 38, 44}, {775, 924, 38, 44}, {1248, 350, 38, 44}};
+    int derrotados = 0;
     int slimeAtual = 0;
+    int bauPerto = -1;
+    bool fontePerto = false;
+    char recebido[80] = "";
+    const char* aviso = "";
+    float tempoAviso = 0;
+    int rodada = 1;
+    int dano = 0;
+    bool sair = false;
+    Rectangle jogar = {213, 189, 174, 40};
+    Rectangle botaoSair = {213, 239, 174, 40};
 
-    estado_jogo estado = ESTADO_EXPLORACAO;
+    estado_jogo estado = ESTADO_MENU;
     estado_combate turno = TURNO_JOGADOR;
 
     enum {
@@ -88,12 +123,52 @@ int main(void)
 
     Texture2D texturaAtual = prota;
 
-    while (!WindowShouldClose())
+    while (!WindowShouldClose() && !sair)
     {
         float delta = GetFrameTime();
 
+        if (delta > 0.05f)
+        {
+            delta = 0.05f;
+        }
+
         // UPDATE
-        if (estado == ESTADO_EXPLORACAO)
+        if (estado == ESTADO_MENU || estado == ESTADO_FINAL ||
+            (estado == ESTADO_COMBATE && acao == DERROTA))
+        {
+            bool clicar = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+            if (IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_R) ||
+                (clicar && CheckCollisionPointRec(GetMousePosition(), jogar)))
+            {
+                criar_jogador(&heroi, prota, prota_idle);
+                configurar_camera(&camera, &heroi);
+                for (int i = 0; i < 7; i++)
+                {
+                    vivos[i] = true;
+                    inimigos[i].hp = inimigos[i].hp_max;
+                }
+                for (int i = 0; i < 4; i++)
+                {
+                    abertos[i] = false;
+                }
+                derrotados = 0;
+                hits = 0;
+                frameSlime = 0;
+                tempoSlime = 0;
+                atacando = false;
+                texturaAtual = prota_idle;
+                bauPerto = -1;
+                fontePerto = false;
+                aviso = "";
+                tempoAviso = 0;
+                estado = ESTADO_EXPLORACAO;
+            }
+            else if (clicar && CheckCollisionPointRec(GetMousePosition(), botaoSair))
+            {
+                sair = true;
+            }
+        }
+        else if (estado == ESTADO_EXPLORACAO)
         {
             if (!atacando)
             {
@@ -175,33 +250,84 @@ int main(void)
                     tempoAtaque = 0;
                 }
 
-                if (frameAtaque >= 2 && frameAtaque <= 5)
-                {
-                    for (int i = 0; i < 2; i++)
-                    {
-                        if (vivos[i])
-                        {
-                            if (CheckCollisionRecs(ataqueHitbox, slimes[i]))
-                            {
-                                slimeAtual = i;
-                                atacando = false;
-                                estado = ESTADO_COMBATE;
-                                turno = TURNO_JOGADOR;
-                                acao = ESCOLHER;
-                                frameAcao = 0;
-                                tempoAcao = 0;
-                                frameIdle = 0;
-                                tempoIdle = 0;
-                                break;
-                            }
-                        }
-                    }
-                }
-
                 if (frameAtaque >= 8)
                 {
                     atacando = false;
                     frameAtaque = 0;
+                }
+            }
+
+            tempoAviso -= delta;
+            bauPerto = -1;
+            fontePerto = false;
+            Rectangle alcance = {player.x - 35, player.y - 35, player.width + 70, player.height + 70};
+            for (int i = 0; i < 4; i++)
+            {
+                if (!abertos[i] && CheckCollisionRecs(alcance, baus[i]))
+                {
+                    bauPerto = i;
+                    if (IsKeyPressed(KEY_E) && derrotados >= selos[i])
+                    {
+                        abertos[i] = true;
+                        aviso = "Baú aberto.";
+                        if ((i == 0 || i == 2) && poder[i] > heroi.combate.ataque)
+                        {
+                            heroi.arma = itens[i];
+                            heroi.combate.ataque = poder[i];
+                            snprintf(recebido, sizeof(recebido), "Equipado: %s   |   ATQ %d", itens[i], poder[i]);
+                            aviso = recebido;
+                        }
+                        if ((i == 1 || i == 3) && poder[i] > heroi.combate.defesa)
+                        {
+                            heroi.armadura = itens[i];
+                            heroi.combate.defesa = poder[i];
+                            snprintf(recebido, sizeof(recebido), "Equipado: %s   |   DEF %d", itens[i], poder[i]);
+                            aviso = recebido;
+                        }
+                        tempoAviso = 3;
+                        bauPerto = -1;
+                    }
+                }
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                if (CheckCollisionRecs(alcance, fontes[i]))
+                {
+                    fontePerto = true;
+                    if (IsKeyPressed(KEY_E))
+                    {
+                        heroi.combate.hp = heroi.combate.hp_max;
+                        aviso = "Vida recuperada.";
+                        tempoAviso = 3;
+                    }
+                }
+            }
+
+            for (int i = 0; i < 7; i++)
+            {
+                Rectangle corpo = {slimes[i].x + slimes[i].width / 4, slimes[i].y + slimes[i].height / 3,
+                    slimes[i].width / 2, slimes[i].height / 2};
+                if (vivos[i] && (CheckCollisionRecs(player, corpo) ||
+                    (atacando && frameAtaque >= 2 && frameAtaque <= 5 && CheckCollisionRecs(ataqueHitbox, corpo))))
+                {
+                    if (i == 6 && derrotados < 6)
+                    {
+                        aviso = "Chefe selado: derrote os 6 guardas.";
+                        tempoAviso = 2;
+                        break;
+                    }
+                    slimeAtual = i;
+                    atacando = false;
+                    estado = ESTADO_COMBATE;
+                    turno = TURNO_JOGADOR;
+                    acao = ESCOLHER;
+                    frameAcao = 0;
+                    tempoAcao = 0;
+                    frameIdle = 0;
+                    tempoIdle = 0;
+                    rodada = 1;
+                    dano = 0;
+                    break;
                 }
             }
         }
@@ -241,22 +367,27 @@ int main(void)
                 tempoSlime = 0;
             }
 
-            if (acao == ESCOLHER)
+            if (acao == ESCOLHER && turno == TURNO_JOGADOR)
             {
-                if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+                bool clicar = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+                if (clicar || IsKeyPressed(KEY_ONE) || IsKeyPressed(KEY_TWO) || IsKeyPressed(KEY_THREE))
                 {
                     Vector2 mouse = GetMousePosition();
 
-                    if (CheckCollisionPointRec(mouse, botaoAtaque))
+                    if (IsKeyPressed(KEY_ONE) || (clicar && CheckCollisionPointRec(mouse, botaoAtaque)))
                     {
                         acao = HEROI_ATACA;
                         turno = TURNO_INIMIGO;
                         frameAcao = 0;
                         tempoAcao = 0;
                     }
-                    else if (CheckCollisionPointRec(mouse, botaoDefesa))
+                    else if (IsKeyPressed(KEY_TWO) || (clicar && CheckCollisionPointRec(mouse, botaoDefesa)))
                     {
                         heroi.combate.defendendo = true;
+                        if (hits < 5)
+                        {
+                            hits++;
+                        }
                         acao = SLIME_ATACA;
                         turno = TURNO_INIMIGO;
                         frameAcao = 0;
@@ -264,7 +395,7 @@ int main(void)
                     }
                     else if (hits >= 5)
                     {
-                        if (CheckCollisionPointRec(mouse, botaoUlt))
+                        if (IsKeyPressed(KEY_THREE) || (clicar && CheckCollisionPointRec(mouse, botaoUlt)))
                         {
                             hits = 0;
                             tempoUlt = 0;
@@ -280,11 +411,13 @@ int main(void)
 
                 if (tempoUlt >= 1.15f)
                 {
+                    dano = inimigos[slimeAtual].hp;
                     for (int i = 0; i < 3; i++)
                     {
                         atacar(&heroi.combate, &inimigos[slimeAtual]);
                     }
 
+                    dano -= inimigos[slimeAtual].hp;
                     acao = SLIME_DANO;
                     frameAcao = 0;
                     tempoAcao = 0;
@@ -301,24 +434,20 @@ int main(void)
                     turno = TURNO_JOGADOR;
                     acao = ESCOLHER;
                     heroi.combate.defendendo = false;
-                    hits = 0;
-                }
-            }
-            else if (acao == DERROTA)
-            {
-                if (IsKeyPressed(KEY_R))
-                {
-                    heroi.combate.hp = heroi.combate.hp_max;
-                    heroi.combate.defendendo = false;
-
-                    inimigos[slimeAtual].hp = inimigos[slimeAtual].hp_max;
-                    inimigos[slimeAtual].defendendo = false;
-
-                    acao = ESCOLHER;
-                    turno = TURNO_JOGADOR;
-                    frameAcao = 0;
-                    tempoAcao = 0;
-                    hits = 0;
+                    aviso = "Guarda derrotado.";
+                    if (slimeAtual == 6)
+                    {
+                        estado = ESTADO_FINAL;
+                    }
+                    else
+                    {
+                        derrotados++;
+                        if (derrotados == 6)
+                        {
+                            aviso = "Rei do Eco liberado no nordeste.";
+                        }
+                    }
+                    tempoAviso = 4;
                 }
             }
             else
@@ -332,7 +461,9 @@ int main(void)
 
                     if (acao == HEROI_ATACA && frameAcao >= 8)
                     {
+                        dano = inimigos[slimeAtual].hp;
                         atacar(&heroi.combate, &inimigos[slimeAtual]);
+                        dano -= inimigos[slimeAtual].hp;
 
                         if (hits < 5)
                         {
@@ -363,7 +494,15 @@ int main(void)
                     }
                     else if (acao == SLIME_ATACA && frameAcao >= 10)
                     {
-                        atacar(&inimigos[slimeAtual], &heroi.combate);
+                        combatente atacante = inimigos[slimeAtual];
+                        if (rodada % 3 == 0)
+                        {
+                            atacante.ataque += 10;
+                        }
+                        dano = heroi.combate.hp;
+                        atacar(&atacante, &heroi.combate);
+                        dano -= heroi.combate.hp;
+                        rodada++;
                         heroi.combate.defendendo = false;
 
                         acao = HEROI_DANO;
@@ -396,7 +535,19 @@ int main(void)
         BeginDrawing();
         ClearBackground(BLACK);
 
-        if (estado == ESTADO_EXPLORACAO)
+        if (estado == ESTADO_MENU)
+        {
+            desenhar_menu("SaBOR Persona", "Jogar", jogar, botaoSair);
+        }
+        else if (estado == ESTADO_FINAL)
+        {
+            desenhar_menu("Você venceu!", "Jogar de novo", jogar, botaoSair);
+        }
+        else if (estado == ESTADO_COMBATE && acao == DERROTA)
+        {
+            desenhar_menu("Fim de jogo", "Reiniciar", jogar, botaoSair);
+        }
+        else if (estado == ESTADO_EXPLORACAO)
         {
             BeginMode2D(camera);
 
@@ -409,7 +560,15 @@ int main(void)
                 WHITE
             );
 
-            for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 4; i++)
+            {
+                desenhar_bau(baus[i], abertos[i]);
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                desenhar_fonte(fontes[i]);
+            }
+            for (int i = 0; i < 7; i++)
             {
                 if (vivos[i])
                 {
@@ -419,7 +578,7 @@ int main(void)
                         slimes[i],
                         (Vector2){0, 0},
                         0,
-                        WHITE
+                        cores[i]
                     );
                 }
             }
@@ -451,10 +610,40 @@ int main(void)
 
             EndMode2D();
 
-            DrawText(
-                "SHIFT: correr | ESPACO: atacar",
-                10, 370, 14, WHITE
-            );
+            DrawRectangle(0, 0, 600, 48, (Color){22, 18, 33, 240});
+            DrawText(TextFormat("PV %d/%d", heroi.combate.hp, heroi.combate.hp_max), 12, 7, 15, WHITE);
+            DrawRectangle(12, 29, 100, 6, DARKGRAY);
+            DrawRectangle(12, 29, 100 * heroi.combate.hp / heroi.combate.hp_max, 6, LIME);
+            DrawText(TextFormat("%s   ATQ %d", heroi.arma, heroi.combate.ataque), 135, 7, 14, GOLD);
+            DrawText(TextFormat("%s   DEF %d", heroi.armadura, heroi.combate.defesa), 135, 27, 14, SKYBLUE);
+            DrawText(TextFormat("GUARDAS  %d/6", derrotados), 458, 7, 15, WHITE);
+            DrawText("TAB   Mapa", 458, 27, 14, LIGHTGRAY);
+
+            DrawRectangle(0, 362, 600, 38, (Color){22, 18, 33, 235});
+            if (bauPerto >= 0 && derrotados < selos[bauPerto])
+            {
+                DrawText(TextFormat("Baú fechado   |   Guardas: %d/%d", derrotados, selos[bauPerto]), 14, 374, 15, GOLD);
+            }
+            else if (bauPerto >= 0)
+            {
+                DrawText("E   Abrir baú", 14, 374, 15, GOLD);
+            }
+            else if (tempoAviso > 0)
+            {
+                DrawText(aviso, 14, 374, 15, WHITE);
+            }
+            else if (fontePerto)
+            {
+                DrawText("E   Recuperar vida", 14, 374, 15, SKYBLUE);
+            }
+            else
+            {
+                DrawText("WASD / setas: mover    Shift: correr    Espaço: atacar    E: usar", 14, 374, 14, LIGHTGRAY);
+            }
+            if (IsKeyDown(KEY_TAB))
+            {
+                desenhar_mapa(mapa, player, slimes, vivos, baus, abertos, fontes);
+            }
         }
         else
         {
@@ -464,15 +653,15 @@ int main(void)
             Color douradoClaro = {232, 205, 151, 255};
             Color texto = {231, 226, 216, 255};
 
-            DrawRectangleGradientV(
-                0, 0, 600, 400,
-                (Color){30, 31, 41, 255},
-                fundo
-            );
+            ClearBackground(fundo);
+            DrawText(TextFormat("Rodada %d", rodada), 20, 22, 18, texto);
+            if (rodada % 3 == 0 && acao == ESCOLHER)
+            {
+                DrawText("Golpe forte neste turno", 355, 22, 17, douradoClaro);
+            }
 
-            DrawEllipse(160, 273, 94, 13, (Color){9, 10, 15, 180});
-            DrawEllipse(440, 273, 94, 13, (Color){9, 10, 15, 180});
-            DrawLine(40, 286, 560, 286, (Color){93, 82, 68, 255});
+            DrawEllipse(230, 250, 35, 6, (Color){9, 10, 15, 180});
+            DrawEllipse(445, 250, 39, 7, (Color){9, 10, 15, 180});
 
             Texture2D texturaHeroi = prota_idle;
             Texture2D texturaSlime = slimeSprite;
@@ -525,31 +714,55 @@ int main(void)
             DrawTexturePro(
                 texturaHeroi,
                 (Rectangle){frameHeroi * 64, 128, 64, 64},
-                (Rectangle){100, 115, 145, 145},
+                (Rectangle){135, 119, 190, 190},
                 (Vector2){0, 0},
                 0,
                 WHITE
             );
 
+            Rectangle destinoSlime = {352, 134, 185, 185};
+            if (slimeAtual == 6)
+            {
+                destinoSlime = (Rectangle){313, 86, 265, 265};
+            }
             DrawTexturePro(
                 texturaSlime,
                 (Rectangle){frameInimigo * 64, 128, 64, 64},
-                (Rectangle){360, 115, 145, 145},
+                destinoSlime,
                 (Vector2){0, 0},
                 0,
-                WHITE
+                cores[slimeAtual]
             );
 
+            if (slimeAtual == 6 && acao != SLIME_MORRE && acao != VITORIA)
+            {
+                DrawRectangle(432, 183, 27, 7, GOLD);
+                DrawRectangle(432, 179, 5, 6, GOLD);
+                DrawRectangle(443, 176, 5, 9, GOLD);
+                DrawRectangle(454, 179, 5, 6, GOLD);
+            }
             if (acao == ULTIMATE)
             {
                 desenhar_ultimate(espadaUlt, tempoUlt);
             }
 
+            if (acao == SLIME_DANO)
+            {
+                DrawText(TextFormat("-%d", dano), 431, 119 - frameAcao * 3, 26, GOLD);
+            }
+            else if (acao == HEROI_DANO)
+            {
+                DrawText(TextFormat("-%d", dano), 215, 119 - frameAcao * 3, 26, PINK);
+            }
+            else if (heroi.combate.defendendo)
+            {
+                DrawText("GUARDA", 194, 119, 18, SKYBLUE);
+            }
             DrawRectangle(0, 300, 600, 100, painel);
             DrawLine(0, 300, 600, 300, dourado);
 
             DrawText("HEROI", 32, 315, 17, texto);
-            DrawText("SLIME", 345, 315, 17, texto);
+            DrawText(inimigos[slimeAtual].nome, 345, 315, 17, texto);
 
             desenhar_vida(heroi.combate, inimigos[slimeAtual]);
 
@@ -576,8 +789,8 @@ int main(void)
                 DrawRectangleLinesEx(botaoAtaque, 1.5f, dourado);
                 DrawRectangleLinesEx(botaoDefesa, 1.5f, dourado);
 
-                DrawText("ATACAR", 38, 121, 17, RED);
-                DrawText("DEFENDER", 29, 169, 17, BLUE);
+                DrawText("1  ATACAR", 29, 121, 16, PINK);
+                DrawText("2  DEFESA", 29, 169, 16, SKYBLUE);
 
                 if (hits >= 5)
                 {
@@ -590,7 +803,7 @@ int main(void)
 
                     DrawRectangleRec(botaoUlt, corUlt);
                     DrawRectangleLinesEx(botaoUlt, 2, douradoClaro);
-                    DrawText("ULTIMATE", 29, 217, 16, WHITE);
+                    DrawText("3  ULTIMATE", 25, 217, 15, WHITE);
                 }
                 else
                 {
@@ -604,15 +817,6 @@ int main(void)
             {
                 DrawRectangle(0, 0, 600, 300, (Color){0, 0, 0, 150});
                 DrawText("VITORIA", 205, 130, 34, douradoClaro);
-            }
-            else if (acao == DERROTA)
-            {
-                DrawRectangle(0, 0, 600, 300, (Color){0, 0, 0, 150});
-                DrawText("DERROTA", 205, 120, 34, texto);
-                DrawText(
-                    "Pressione R para tentar novamente",
-                    130, 170, 17, texto
-                );
             }
         }
 

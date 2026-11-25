@@ -159,7 +159,9 @@ void criar_jogador(jogador* heroi, Texture2D prota, Texture2D prota_idle)
     heroi->animacao_player.frame_tick = 8;
     heroi->animacao_player.frame_total = 6;
 
-    criar_combatente(&heroi->combate, "Heroi", 100, 15, 5);
+    criar_combatente(&heroi->combate, "Heroi", 110, 14, 0);
+    heroi->arma = "Espada curta";
+    heroi->armadura = "Nu";
 }
 
 void destruir_jogador(jogador* heroi)
@@ -449,3 +451,114 @@ Rectangle criar_hitbox_ataque(Rectangle player, int linhaAtaque)
         };
     }
 }
+void desenhar_bau(Rectangle bau, bool aberto)
+{
+    int x = bau.x;
+    int y = bau.y;
+    Color borda = {59, 36, 41, 255};
+    DrawEllipse(x + 22, y + 30, 26, 6, (Color){41, 28, 38, 100});
+    DrawRectangle(x, y + 6, 44, 25, borda);
+    DrawRectangle(x + 3, y + 9, 38, 18, (Color){159, 78, 48, 255});
+    DrawRectangle(x + 6, y + 9, 4, 18, GOLD);
+    DrawRectangle(x + 34, y + 9, 4, 18, GOLD);
+    if (aberto)
+    {
+        DrawRectangle(x + 2, y, 40, 12, borda);
+        DrawRectangle(x + 4, y + 2, 36, 4, BROWN);
+        DrawRectangle(x + 4, y + 13, 36, 6, borda);
+    }
+    else
+    {
+        DrawRectangle(x + 2, y + 1, 40, 12, borda);
+        DrawRectangle(x + 4, y + 3, 36, 7, (Color){230, 157, 72, 255});
+        DrawRectangle(x + 19, y + 11, 7, 9, GOLD);
+    }
+}
+
+void desenhar_fonte(Rectangle fonte)
+{
+    int x = fonte.x;
+    int y = fonte.y;
+    DrawEllipse(x + 19, y + 38, 24, 9, (Color){48, 63, 71, 255});
+    DrawEllipse(x + 19, y + 34, 23, 8, (Color){163, 181, 176, 255});
+    DrawEllipse(x + 19, y + 34, 18, 5, SKYBLUE);
+    DrawTriangle((Vector2){x + 19, y}, (Vector2){x + 7, y + 20}, (Vector2){x + 19, y + 33}, SKYBLUE);
+    DrawTriangle((Vector2){x + 19, y}, (Vector2){x + 19, y + 33}, (Vector2){x + 31, y + 20}, BLUE);
+    DrawRectangle(x + 16, y + 10, 3, 9, WHITE);
+}
+
+void desenhar_menu(const char* titulo, const char* opcao, Rectangle jogar, Rectangle sair)
+{
+    Color botao = {57, 63, 74, 255};
+    Color corSair = LIGHTGRAY;
+    Vector2 mouse = GetMousePosition();
+
+    if (CheckCollisionPointRec(mouse, jogar))
+    {
+        botao = (Color){79, 88, 101, 255};
+    }
+    if (CheckCollisionPointRec(mouse, sair))
+    {
+        corSair = WHITE;
+    }
+
+    ClearBackground((Color){29, 32, 38, 255});
+    DrawText(titulo, (600 - MeasureText(titulo, 38)) / 2, 95, 38, RAYWHITE);
+    DrawRectangleRec(jogar, botao);
+    DrawText(opcao, (600 - MeasureText(opcao, 20)) / 2, jogar.y + 10, 20, WHITE);
+    DrawText("Sair", (600 - MeasureText("Sair", 20)) / 2, sair.y + 10, 20, corSair);
+}
+
+void desenhar_mapa(Texture2D mapa, Rectangle player, Rectangle slimes[], bool vivos[], Rectangle baus[], bool abertos[], Rectangle fontes[])
+{
+    Color tinta = {29, 19, 37, 255};
+    DrawRectangle(0, 0, 600, 400, (Color){14, 11, 24, 235});
+    DrawText("MAPA DA VILA", 27, 21, 26, RAYWHITE);
+    DrawTexturePro(mapa, (Rectangle){0, 0, mapa.width, mapa.height}, (Rectangle){27, 65, 405, 270},
+        (Vector2){0, 0}, 0, (Color){156, 151, 163, 255});
+    for (int i = 0; i < 7; i++)
+    {
+        if (vivos[i])
+        {
+            int x = 27 + (slimes[i].x + slimes[i].width / 2) * 0.225f;
+            int y = 65 + (slimes[i].y + slimes[i].height / 2) * 0.225f;
+            DrawCircle(x, y, 7, tinta);
+            if (i == 6)
+            {
+                DrawCircle(x, y, 5, PURPLE);
+            }
+            else
+            {
+                DrawCircle(x, y, 5, PINK);
+            }
+        }
+    }
+    for (int i = 0; i < 4; i++)
+    {
+        if (!abertos[i])
+        {
+            int x = 27 + (baus[i].x + 22) * 0.225f;
+            int y = 65 + (baus[i].y + 16) * 0.225f;
+            DrawRectangle(x - 5, y - 5, 11, 10, tinta);
+            DrawRectangle(x - 3, y - 3, 7, 6, GOLD);
+        }
+    }
+    for (int i = 0; i < 3; i++)
+    {
+        int x = 27 + (fontes[i].x + 19) * 0.225f;
+        int y = 65 + (fontes[i].y + 22) * 0.225f;
+        DrawCircle(x, y, 6, tinta);
+        DrawCircle(x, y, 4, SKYBLUE);
+    }
+    int x = 27 + (player.x + 20) * 0.225f;
+    int y = 65 + (player.y + 25) * 0.225f;
+    DrawCircle(x, y, 7, tinta);
+    DrawCircle(x, y, 4, WHITE);
+    DrawText("VOCE", 448, 95, 17, WHITE);
+    DrawText("BAU", 448, 132, 17, GOLD);
+    DrawText("FONTE", 448, 169, 17, SKYBLUE);
+    DrawText("GUARDA", 448, 206, 17, PINK);
+    DrawText("REI DO ECO", 448, 243, 17, PURPLE);
+    DrawText("Solte TAB para voltar", 28, 357, 15, LIGHTGRAY);
+}
+
